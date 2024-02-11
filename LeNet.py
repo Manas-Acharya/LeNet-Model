@@ -126,4 +126,14 @@ for t in range (epoch):
     test(test_dl, model)
 print("Done")
 
+### saveing model ###
+file_name = "LeNet.pth"
+torch.save(model.state_dict(), file_name)
+
+### loading the model ###
+
+loaded_model = LeNet()
+loaded_model.load_state_dict(torch.load(file_name))
+loaded_model.eval()
+
 
