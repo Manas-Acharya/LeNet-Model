@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torch import optim
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 
@@ -100,30 +101,30 @@ def train(dataloader, model, epoch=3, lr=1e-3, device = device):
             print(f"loss : {loss:>7f}, [{current:5d}/ {size:5d}] ")
 
 
-def test(dataloader, model):
-    model.to(device)
-    model.eval()
-    size = len(dataloader.dataset)
-    num_batches = len(dataloader)
-    test_loss, correct = 0, 0
+# def test(dataloader, model):
+#     model.to(device)
+#     model.eval()
+#     size = len(dataloader.dataset)
+#     num_batches = len(dataloader)
+#     test_loss, correct = 0, 0
     
-    with torch.no_grad():
-        for images, label in dataloader:
-            images = images.to(device)
-            label = label.to(device)
-            pred = model(images)
-            test_loss += loss_fn(pred, label).item()
-            correct += torch.sum(pred.argmax(1)==label).type(torch.float).item()
+#     with torch.no_grad():
+#         for images, label in dataloader:
+#             images = images.to(device)
+#             label = label.to(device)
+#             pred = model(images)
+#             test_loss += loss_fn(pred, label).item()
+#             correct += torch.sum(pred.argmax(1)==label).type(torch.float).item()
 
-    test_loss /= batch_size
-    correct /= size
-    print(f"Test error: \n Accuracy: {correct*100:>3f}%, avg loss: {test_loss:>7f}")
+#     test_loss /= batch_size
+#     correct /= size
+#     print(f"Test error: \n Accuracy: {correct*100:>3f}%, avg loss: {test_loss:>7f}")
 
-epoch = 10
+epoch = 1
 for t in range (epoch):
     print(f"Epoch {t+1} \n -----------")
     train(train_dl, model, device)
-    test(test_dl, model)
+    # test(test_dl, model)
 print("Done")
 
 ### saveing model ###
@@ -134,6 +135,24 @@ torch.save(model.state_dict(), file_name)
 
 loaded_model = LeNet()
 loaded_model.load_state_dict(torch.load(file_name))
-loaded_model.eval()
+# loaded_model.eval()
+
+def inference(loaded_model):
+    
+    img = cv.imread("assignment4\hand_3.png")
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    resize = cv.resize(gray, (28, 28))
+    image_tensor = transforms.ToTensor()(resize).unsqueeze(0)  # Add batch dimension
+    loaded_model.eval()
+    # img = img.to(device)
+    with torch.no_grad():
+        pred = loaded_model(image_tensor)
+    
+    prediction = pred.argmax(1).item()
+    print(f"Prediction : {prediction}")
+
+
+inference(loaded_model)
+
 
 
